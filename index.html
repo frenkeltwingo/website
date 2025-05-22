@@ -788,17 +788,31 @@
   }
 
   confirmTimeSlotsBtn.addEventListener('click', function() {
+      console.log("[Confirm Click Entry] confirmTimeSlotsBtn clicked.");
       console.log("[Confirm Click] currentSelectedDateForModal beim Bestätigen:".blue, currentSelectedDateForModal);
+      
       if (!currentSelectedDateForModal) {
           console.warn("[Confirm Click] currentSelectedDateForModal ist null! Das sollte nicht passieren, wenn das Modal offen war.");
-          // Vorsichtshalber trotzdem die UI aktualisieren
       }
-      timeSlotModal.style.display = 'none';
+      // Die Logik zum Speichern der aktuell im Modal ausgewählten Slots für currentSelectedDateForModal
+      // ist bereits im Click-Handler der time-slot-block Elemente enthalten.
+      // Hier müssen wir nur das Modal schließen und die UI aktualisieren.
+      if (timeSlotModal) timeSlotModal.style.display = 'none'; else console.error("[Confirm Click] timeSlotModal nicht gefunden!");
+      
+      console.log("[Confirm Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
       updateAvailabilitySummaryAndHiddenInput(); // Aktualisiert Text und verstecktes Feld
+      console.log("[Confirm Click] Rufe updateFlatpickrDayMarkers auf.");
       updateFlatpickrDayMarkers(); // Aktualisiert die Tagesmarker im Kalender
+      console.log("[Confirm Click Exit] Event-Listener abgearbeitet.");
   });
 
   function updateAvailabilitySummaryAndHiddenInput() {
+      console.log("[Update Summary Entry] Funktion betreten.");
+      if (!availabilityInput || !availabilityDetailsPreview || !detailedAvailabilityInput) {
+          console.error("[Update Summary] Eines der Kern-UI-Elemente (availabilityInput, availabilityDetailsPreview, detailedAvailabilityInput) nicht gefunden!");
+          return; // Frühzeitiger Ausstieg, um weitere Fehler zu vermeiden
+      }
+
       const daysWithTimesArray = Object.entries(selectedDateTimeSlots)
                                .filter(([_, times]) => times && times.length > 0);
       const daysWithTimesCount = daysWithTimesArray.length;
@@ -822,27 +836,47 @@
       }
       detailedAvailabilityInput.value = JSON.stringify(selectedDateTimeSlots);
       console.log("[Update Summary] detailedAvailabilityInput.value gesetzt auf:", detailedAvailabilityInput.value);
+      console.log("[Update Summary Exit] Funktion beendet.");
   }
 
-  closeTimeModalBtn.onclick = function() {
-      timeSlotModal.style.display = 'none';
-      updateAvailabilitySummaryAndHiddenInput(); 
-      updateFlatpickrDayMarkers();
+  if (closeTimeModalBtn) {
+    closeTimeModalBtn.onclick = function() {
+        console.log("[Close Click Entry] closeTimeModalBtn geklickt.");
+        if (timeSlotModal) timeSlotModal.style.display = 'none'; else console.error("[Close Click] timeSlotModal nicht gefunden!");
+        console.log("[Close Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
+        updateAvailabilitySummaryAndHiddenInput(); 
+        console.log("[Close Click] Rufe updateFlatpickrDayMarkers auf.");
+        updateFlatpickrDayMarkers();
+        console.log("[Close Click Exit] Event-Listener abgearbeitet.");
+    }
+  } else {
+    console.error("Element .close-time-modal-btn nicht gefunden!");
   }
 
   window.addEventListener('click', function(event) {
-      if (event.target == timeSlotModal) {
+      // Nur ausführen, wenn das timeSlotModal Element existiert und sichtbar ist
+      if (timeSlotModal && timeSlotModal.style.display === 'block' && event.target == timeSlotModal) {
+          console.log("[Window Click Entry] Außerhalb des timeSlotModal geklickt, während es sichtbar ist.");
           timeSlotModal.style.display = 'none';
+          console.log("[Window Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
           updateAvailabilitySummaryAndHiddenInput();
+          console.log("[Window Click] Rufe updateFlatpickrDayMarkers auf.");
           updateFlatpickrDayMarkers();
+          console.log("[Window Click Exit] Event-Listener abgearbeitet.");
       }
   });
 
+  // Initial call to set summary and hidden input based on current state (likely empty on page load)
   updateAvailabilitySummaryAndHiddenInput();
 
   function updateFlatpickrDayMarkers() {
+    console.log("[Update Markers Entry] Funktion updateFlatpickrDayMarkers betreten.");
     if (!fp || typeof fp.redraw !== 'function') {
-        console.warn("Flatpickr Instanz (fp) nicht verfügbar für updateFlatpickrDayMarkers");
+        console.warn("[Update Markers] Flatpickr Instanz (fp) nicht verfügbar oder redraw keine Funktion für updateFlatpickrDayMarkers. fp:", fp);
+        return;
+    }
+    if (!fp.calendarContainer) {
+        console.warn("[Update Markers] fp.calendarContainer nicht verfügbar. Flatpickr möglicherweise nicht vollständig initialisiert.");
         return;
     }
 
@@ -850,21 +884,26 @@
     const days = fp.calendarContainer.querySelectorAll('.flatpickr-day');
     days.forEach(dayElem => {
         dayElem.classList.remove('flatpickr-day-has-user-slots'); 
-        // Falls Sie andere Klassen für Firestore-Verfügbarkeit hatten, diese auch entfernen
     });
 
     // Füge die Klasse für Tage hinzu, an denen der Nutzer Termine ausgewählt hat
     Object.keys(selectedDateTimeSlots).forEach(dateKey => {
         if (selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
-            const dayElement = fp.getDateElem(new Date(dateKey + 'T00:00:00')); // Stelle sicher, dass die Zeitkomponente neutral ist
+            // Erzeuge ein Date-Objekt sicher, um Zeitzonenprobleme bei reinen Datumsstrings zu minimieren
+            const dateParts = dateKey.split('-').map(Number);
+            const dateForFlatpickr = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            
+            const dayElement = fp.getDateElem(dateForFlatpickr); 
             if (dayElement) {
                 dayElement.classList.add('flatpickr-day-has-user-slots');
+            } else {
+                // console.warn(`[Update Markers] Kein dayElement für Datum ${dateKey} gefunden.`);
             }
         }
     });
     
     fp.redraw(); // Zeichne den Kalender neu, um die Änderungen der Klassen anzuzeigen
-    console.log("[Update Flatpickr Markers] Markers updated based on selectedDateTimeSlots:", JSON.parse(JSON.stringify(selectedDateTimeSlots)) );
+    console.log("[Update Markers Exit] Markers updated based on selectedDateTimeSlots:", JSON.parse(JSON.stringify(selectedDateTimeSlots)) );
   }
 
   (function enableConsoleColors() {
