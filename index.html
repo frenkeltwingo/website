@@ -561,10 +561,10 @@
       <input type="email" id="email" name="email" required>
 
       <label for="phone">Telefonnummer:</label>
-      <input type="tel" id="phone" name="phone">
+      <input type="tel" id="phone" name="phone" required>
 
       <label for="city">Wohnort:</label>
-      <input type="text" id="city" name="city">
+      <input type="text" id="city" name="city" required>
 
       <label for="availability">Wunschtermine für Bewerbungsgespräch (Dauer ca. 1 Std.):</label>
       <p style="font-size: 0.85rem; color: var(--text-color-secondary); margin-top: -0.75rem; margin-bottom: 1rem;">Bitte wählen Sie möglichst mehrere Termine an verschiedenen Tagen aus, um die Wahrscheinlichkeit einer passenden Übereinstimmung zu erhöhen.</p>
@@ -1112,9 +1112,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const driversLicenseB = driversLicenseBCheckbox ? driversLicenseBCheckbox.checked : false;
 
             // Basic validation (HTML 'required' should also be used)
-            if (!name || !email) {
+            if (!name || !email || !phone || !city) {
                 // alert('Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail).');
-                showNotification('Validierungsfehler', 'Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail).', 'error');
+                showNotification('Validierungsfehler', 'Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail, Telefon, Wohnort).', 'error');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Bewerbung senden';
                 return;
