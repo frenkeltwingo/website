@@ -1,0 +1,547 @@
+:root {
+  --bg-color: #1f2329;
+  --card-bg-color: #2a2f37;
+  --text-color-primary: #f0f0f0;
+  --text-color-secondary: #b0b0b0;
+  --accent-color: #00bfff;
+  --accent-color-darker: #009acd;
+  --border-color: #3a3f47;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color-primary);
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+.main-wrapper { width: 100%; max-width: 800px; }
+
+.section {
+  background-color: var(--card-bg-color);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Hero section on index.html */
+.hero {
+  text-align: center;
+  padding-bottom: 1.5rem;
+}
+
+/* Smaller hero section for subpages */
+.hero-small {
+  text-align: center; 
+  padding-bottom: 1rem;
+}
+
+/* Logo styling - consistent for main page and subpages, but size might differ in media queries */
+.logo {
+  max-width: 330px; /* Default from index.html */
+  margin-bottom: 1.5rem; 
+  border-radius: 8px;
+}
+
+.hero-small .logo {
+    max-width: 280px; /* From subpage style */
+    margin-bottom: 1rem;
+}
+
+
+/* Navigation menu - unified styles */
+.hero-nav {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem; /* Using the smaller gap from subpages as default, can be overridden if needed for main page specifically */
+}
+
+.hero-nav li {
+  margin-bottom: 0; /* Overrides general li margin */
+}
+
+.hero-nav a {
+  text-decoration: none;
+  color: var(--text-color-secondary);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.hero-nav a:hover,
+.hero-nav a:focus,
+.hero-nav a.active { /* Combined active and hover/focus style */
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+/* Heading Styles */
+/* H1 on Main Page (inside .hero) */
+.hero > h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-color-primary);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+/* H1 on Subpages (inside .section, but not .hero or .hero-small directly) */
+.section:not(.hero):not(.hero-small) > h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.hero-subtitle { /* Specific to index.html hero */
+  font-size: 1.3rem;
+  color: var(--accent-color);
+  margin-bottom: 2.5rem;
+  font-weight: 700;
+}
+
+/* H2 (General for sections, modals, and subpage content) */
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 1.8rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+/* H2 on Subpages (adjustments if needed, e.g., .section:not(.hero):not(.hero-small) > h2) */
+.section:not(.hero):not(.hero-small) > h2 {
+    font-size: 1.8rem; /* From subpage style */
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color); /* Thinner border from subpage style */
+}
+
+.modal-content h2 {
+    /* Styles for H2 within modals are more specific and should override general H2 if necessary */
+    /* Example from index.html: */
+    color: var(--accent-color); /* Already covered by general h2, but good to note */
+    margin-bottom: 1.5rem; /* Specific margin for modal H2 */
+    text-align: center; /* Specific alignment for modal H2 */
+    border-bottom: none; /* Modals usually don't have a border under H2 */
+    padding-bottom: 0; /* No padding if no border */
+}
+
+
+/* H3 (General for sections) */
+h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-color-primary);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* General List Styles (from index.html) */
+/* Ensure this UL does not conflict with .hero-nav ul */
+.section ul, .modal-content ul { 
+  list-style: none; 
+  padding-left: 0; 
+}
+
+.section li { /* Specific to list items in general sections */
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: var(--text-color-secondary);
+}
+
+.icon { /* Unicode-Icons for lists */
+  color: var(--accent-color);
+  margin-right: 1rem;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  width: 20px; /* Feste Breite für bessere Ausrichtung */
+  text-align: center;
+}
+
+.text-intro { /* For introductory sentences */
+    font-size: 1.1rem;
+    color: var(--text-color-primary);
+    margin-bottom: 1.5rem;
+}
+
+/* Call to Action Button */
+.cta-button {
+  display: inline-block;
+  background-color: var(--accent-color);
+  color: #fff;
+  padding: 1rem 2.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 1.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 191, 255, 0.3);
+}
+
+.cta-button:hover {
+  background-color: var(--accent-color-darker);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 191, 255, 0.4);
+}
+
+/* Contact Section Specifics (from index.html) */
+.contact-section { text-align: center; }
+.contact-section p {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.75rem;
+}
+.contact-section strong,
+.contact-section strong a {
+    font-size: 1.4rem;
+    color: #FFFFFF !important;
+    font-weight: 700;
+    text-decoration: none !important;
+}
+.final-greeting { /* from index.html */
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-top: 1.5rem;
+}
+
+/* General paragraph styling for subpages (if different from index.html) */
+.section:not(.hero):not(.hero-small) p {
+  margin-bottom: 1rem;
+  color: var(--text-color-secondary);
+}
+
+/* Impressum Specific Styles */
+.impressum-data strong {
+    color: var(--text-color-primary);
+    display: inline-block;
+    min-width: 180px;
+}
+.impressum-data a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+.impressum-data a:hover {
+    text-decoration: underline;
+}
+
+
+/* Modal Styles (from index.html) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  padding-top: 60px;
+}
+
+.modal-content {
+  background-color: var(--card-bg-color);
+  color: var(--text-color-primary);
+  margin: 5% auto;
+  padding: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+/* .modal-content h2 is already addressed above */
+
+.modal-content label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color-secondary);
+    font-weight: 700;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="tel"],
+.modal-content textarea {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color-primary);
+    font-size: 1rem;
+    display: block;
+}
+
+.modal-content textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="email"]:focus,
+.modal-content input[type="tel"]:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-color-darker);
+}
+
+.form-group { 
+    margin-bottom: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.75rem;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.checkbox-label {
+    font-size: 0.95rem;
+    color: var(--text-color-secondary);
+    font-weight: normal;
+}
+
+.modal-content .cta-button {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.close-btn, /* Covers both .close-btn and .close-time-modal-btn */
+.close-time-modal-btn {
+  color: var(--text-color-secondary);
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-size: 28px;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover,
+.close-btn:focus,
+.close-time-modal-btn:hover,
+.close-time-modal-btn:focus {
+  color: var(--accent-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Styles for time slot modal items (from index.html) */
+#timeSlotsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+/* .time-slot-item was part of an older version, .time-slot-block is current */
+.time-slot-block {
+    padding: 12px 8px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-size: 0.95rem;
+    color: var(--text-color-secondary);
+    user-select: none;
+}
+
+.time-slot-block:hover {
+    border-color: var(--accent-color);
+}
+
+.time-slot-block.selected-slot {
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
+    border-color: var(--accent-color-darker) !important;
+    font-weight: bold;
+}
+
+.time-slot-block.slot-unavailable {
+    background-color: var(--border-color);
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.time-slot-block.slot-unavailable:hover {
+    border-color: var(--border-color);
+    color: #6c757d !important; 
+}
+
+
+/* Flatpickr Customizations (from index.html) */
+.flatpickr-day.flatpickr-day-has-user-slots {
+    background-color: var(--accent-color) !important; 
+    color: #fff !important;
+    border: 2px solid var(--accent-color-darker) !important;
+    font-weight: bold;
+    box-shadow: 0 0 5px var(--accent-color);
+}
+.flatpickr-day.flatpickr-day-has-user-slots:hover {
+    background-color: var(--accent-color-darker) !important;
+}
+
+input#availability[readonly] { /* Input for Flatpickr */
+    cursor: pointer;
+    background-color: var(--bg-color);
+}
+
+#availabilityDetailsPreview {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+}
+#availabilityDetailsPreview ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+}
+#availabilityDetailsPreview li {
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    display: block; 
+    align-items: normal;
+}
+#availabilityDetailsPreview li strong {
+    color: var(--text-color-primary);
+}
+
+.flatpickr-calendar {
+  display: none; 
+}
+.flatpickr-calendar.open {
+  display: block; 
+  z-index: 100000; 
+}
+#timeSlotModal { /* Ensure this specific modal is above flatpickr */
+    display: none; 
+    z-index: 100001; 
+}
+
+
+/* Responsive Media Queries - Combined and Generalized */
+@media (max-width: 600px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+  .main-wrapper {
+    padding: 0 0.5rem;
+  }
+  .section {
+    padding: 2rem 1.5rem;
+  }
+
+  /* Logo adjustments for responsive */
+  .logo { /* General logo on small screens */
+    max-width: 270px; /* From index.html responsive */
+  }
+  .hero-small .logo {
+     max-width: 220px; /* From subpage responsive */
+  }
+
+  /* Navigation responsive */
+  .hero-nav ul {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .hero-nav a {
+    font-size: 0.9rem; /* Fallback from index.html, subpages had 0.95rem, can pick one or be more specific */
+    padding: 0.4rem 0;
+  }
+
+  /* Headings responsive */
+  .hero > h1 {
+    font-size: 1.9rem;
+    line-height: 1.25;
+  }
+   .section:not(.hero):not(.hero-small) > h1 {
+    font-size: 2rem; /* From subpage responsive */
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+  h2 { /* General H2 responsive */
+    font-size: 1.6rem; 
+    margin-bottom: 1.2rem;
+  }
+   .section:not(.hero):not(.hero-small) > h2 {
+      font-size: 1.6rem; /* From subpage responsive, matches general h2 */
+   }
+   .modal-content h2 {
+       font-size: 1.6rem; /* Assuming modal H2 also scales */
+   }
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  .cta-button {
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .section li { /* General list items in sections */
+    font-size: 1rem;
+  }
+  .icon {
+    font-size: 1.1rem;
+    margin-right: 0.6rem;
+  }
+
+  /* Impressum specific responsive */
+  .impressum-data strong {
+    display: block;
+    min-width: auto;
+    margin-bottom: 0.25rem;
+  }
+} 
