@@ -349,6 +349,18 @@
         border-color: var(--accent-color-darker) !important;
     }
 
+    /* Style for Flatpickr days where the user has selected specific time slots in the current session */
+    .flatpickr-day.flatpickr-day-has-user-slots {
+        background-color: var(--accent-color) !important; 
+        color: #fff !important;
+        border: 2px solid var(--accent-color-darker) !important; /* Deutlichere Hervorhebung */
+        font-weight: bold;
+        box-shadow: 0 0 5px var(--accent-color);
+    }
+    .flatpickr-day.flatpickr-day-has-user-slots:hover {
+        background-color: var(--accent-color-darker) !important;
+    }
+
     /* Ensure the close button for the new modal is styled like the old one */
     .close-time-modal-btn {
       color: var(--text-color-secondary);
@@ -410,6 +422,19 @@
     #timeSlotModal {
         display: none; /* Standardmäßig versteckt */
         z-index: 100001; /* Noch höher als der Flatpickr-Kalender, um sicherzustellen, dass es darüber liegt */
+    }
+
+    /* Style for unavailable slots fetched from Firestore */
+    .time-slot-block.slot-unavailable {
+        background-color: var(--border-color); /* Dunkler, um Inaktivität anzuzeigen */
+        color: #6c757d; /* Gedämpfte Textfarbe */
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    .time-slot-block.slot-unavailable:hover {
+        border-color: var(--border-color); /* Kein Hover-Effekt für Akzentfarbe */
+        /* Optional: Verhindern, dass sich die Schriftfarbe beim Hover ändert, falls es einen generellen Hover-Effekt gibt */
+        color: #6c757d !important; 
     }
   </style>
 </head>
@@ -623,6 +648,8 @@
         }
     });
     console.log("Flatpickr V17.3 Initialisierung (Popup auf #availability, Mode: Single - zurückgesetzt) abgeschlossen. fp Instanz:", fp);
+    // Initial marker update after Flatpickr is ready
+    updateFlatpickrDayMarkers(); 
 
   } else {
     if (!availabilityInput) console.error("FEHLER: Element #availability NICHT gefunden!");
@@ -637,66 +664,138 @@
       return dateStr;
   }
 
-  function populateTimeSlots(dateStr) {
-      console.log("[Populate Time Slots] Date:", dateStr, "Current selections for this date:", selectedDateTimeSlots[dateStr]);
-      timeSlotsContainer.innerHTML = ''; 
+  async function populateTimeSlots(dateStr) {
+      console.log("[Populate Time Slots V2 - Firestore] Date:", dateStr, "Current selections for this date:", selectedDateTimeSlots[dateStr]);
+      timeSlotsContainer.innerHTML = '<p style="text-align:center; color: var(--text-color-secondary);">Lade verfügbare Zeiten...</p>'; // Loading indicator
+
+      const bookedFirebaseTimes = new Set(); // Set to store "HH:MM" strings of booked slots from Firestore
+
+      try {
+          if (!window.db || !window.query || !window.collection || !window.where || !window.getDocs || !window.Timestamp) {
+              console.error("Firestore ist nicht initialisiert oder erforderliche Funktionen fehlen auf window.");
+              timeSlotsContainer.innerHTML = '<p style="text-align:center; color: red;">Fehler beim Laden der Zeiten. Firebase nicht bereit.</p>';
+              return;
+          }
+
+          const [year, month, day] = dateStr.split('-').map(Number);
+          // Wichtig: Monat ist 0-indiziert in JavaScript Date Objekten
+          const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+          const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+          const startOfDayTimestamp = window.Timestamp.fromDate(startOfDay);
+          const endOfDayTimestamp = window.Timestamp.fromDate(endOfDay);
+
+          console.log(`[Populate Time Slots V2 - Firestore] Querying for slots between ${startOfDay.toISOString()} and ${endOfDay.toISOString()}`);
+
+          const q = window.query(
+              window.collection(window.db, "bookedInterviewSlots"),
+              window.where("slotDateTime", ">=", startOfDayTimestamp),
+              window.where("slotDateTime", "<=", endOfDayTimestamp)
+          );
+
+          const querySnapshot = await window.getDocs(q);
+          querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              if (data.slotDateTime) {
+                  const bookedDate = data.slotDateTime.toDate(); // Konvertiert Firestore Timestamp zu JS Date
+                  // Stellt sicher, dass wir nur Termine für den exakten Tag nehmen, falls die Query zu breit ist (sollte sie aber nicht sein)
+                  if (bookedDate.getFullYear() === year && (bookedDate.getMonth() + 1) === month && bookedDate.getDate() === day) {
+                      const hours = String(bookedDate.getHours()).padStart(2, '0');
+                      const minutes = String(bookedDate.getMinutes()).padStart(2, '0');
+                      bookedFirebaseTimes.add(`${hours}:${minutes}`);
+                  }
+              }
+          });
+          console.log("[Populate Time Slots V2 - Firestore] Booked times from Firestore for", dateStr, ":", Array.from(bookedFirebaseTimes));
+          timeSlotsContainer.innerHTML = ''; // Clear loading indicator
+          if (querySnapshot.empty && bookedFirebaseTimes.size === 0) {
+            // Optional: Message if no slots are booked yet for this day in Firestore
+            // console.log("[Populate Time Slots V2 - Firestore] No slots booked in Firestore for this day.");
+          }
+
+      } catch (error) {
+          console.error("[Populate Time Slots V2 - Firestore] Error fetching booked slots from Firestore:", error);
+          timeSlotsContainer.innerHTML = '<p style="text-align:center; color: red;">Fehler beim Laden der Verfügbarkeiten aus der Datenbank.</p>';
+          // Optionally, still render slots but without availability info or show a clearer error
+          // return; // Early exit if critical
+      }
+
       const hours = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
       const previouslySelectedTimes = selectedDateTimeSlots[dateStr] || [];
+
+      if (hours.length === 0) {
+          timeSlotsContainer.innerHTML = '<p style="text-align:center; color: var(--text-color-secondary);">Keine Zeit-Slots für diesen Tag konfiguriert.</p>';
+          return;
+      }
 
       hours.forEach(hour => {
           const slotDiv = document.createElement('div');
           slotDiv.classList.add('time-slot-block');
           slotDiv.textContent = hour;
-          slotDiv.dataset.hour = hour; 
+          slotDiv.dataset.hour = hour;
 
-          if (previouslySelectedTimes.includes(hour)) {
-              slotDiv.classList.add('selected-slot');
+          if (bookedFirebaseTimes.has(hour)) {
+              slotDiv.classList.add('slot-unavailable'); // Markiert als durch Firestore gebucht
+              slotDiv.title = "Dieser Termin ist bereits vergeben.";
+          } else {
+              // Nur wenn nicht durch Firestore gebucht, prüfen, ob es aktuell vom Nutzer ausgewählt ist
+              if (previouslySelectedTimes.includes(hour)) {
+                  slotDiv.classList.add('selected-slot');
+              }
+
+              // Click-Listener nur für verfügbare Slots hinzufügen
+              slotDiv.addEventListener('click', function() {
+                  this.classList.toggle('selected-slot');
+                  const currentHour = this.dataset.hour;
+                  if (!currentSelectedDateForModal) {
+                      console.error("currentSelectedDateForModal ist null im Slot-Klick!");
+                      return;
+                  }
+                  
+                  let currentDaySlots = selectedDateTimeSlots[currentSelectedDateForModal] || [];
+                  
+                  if (this.classList.contains('selected-slot')) {
+                      if (!currentDaySlots.includes(currentHour)) {
+                          currentDaySlots.push(currentHour);
+                      }
+                  } else {
+                      const index = currentDaySlots.indexOf(currentHour);
+                      if (index > -1) {
+                          currentDaySlots.splice(index, 1);
+                      }
+                  }
+
+                  if (currentDaySlots.length > 0) {
+                    selectedDateTimeSlots[currentSelectedDateForModal] = currentDaySlots.sort();
+                  } else {
+                    delete selectedDateTimeSlots[currentSelectedDateForModal];
+                  }
+                  console.log(`[Slot Click] Date: ${currentSelectedDateForModal}, Hour: ${currentHour}, Selected: ${this.classList.contains('selected-slot')}`);
+                  console.log("[Slot Click] selectedDateTimeSlots updated:", JSON.parse(JSON.stringify(selectedDateTimeSlots)));
+                  updateAvailabilitySummaryAndHiddenInput(); // Diese Funktion sollte auch Flatpickr Day-Marker aktualisieren
+              });
           }
-
-          slotDiv.addEventListener('click', function() {
-              this.classList.toggle('selected-slot');
-              const currentHour = this.dataset.hour;
-              if (!currentSelectedDateForModal) {
-                  console.error("currentSelectedDateForModal ist null im Slot-Klick!");
-                  return;
-              }
-              
-              let currentDaySlots = selectedDateTimeSlots[currentSelectedDateForModal] || [];
-              
-              if (this.classList.contains('selected-slot')) {
-                  if (!currentDaySlots.includes(currentHour)) {
-                      currentDaySlots.push(currentHour);
-                  }
-              } else {
-                  const index = currentDaySlots.indexOf(currentHour);
-                  if (index > -1) {
-                      currentDaySlots.splice(index, 1);
-                  }
-              }
-
-              if (currentDaySlots.length > 0) {
-                selectedDateTimeSlots[currentSelectedDateForModal] = currentDaySlots.sort();
-              } else {
-                delete selectedDateTimeSlots[currentSelectedDateForModal];
-              }
-              console.log(`[Slot Click] Date: ${currentSelectedDateForModal}, Hour: ${currentHour}, Selected: ${this.classList.contains('selected-slot')}`);
-              console.log("[Slot Click] selectedDateTimeSlots updated:", JSON.parse(JSON.stringify(selectedDateTimeSlots)));
-          });
           timeSlotsContainer.appendChild(slotDiv);
       });
+      // Nach dem Rendern der Slots, aktualisiere Flatpickr Tagesmarker
+      if (fp && typeof fp.redraw === 'function') {
+        // Verzögerung, um sicherzustellen, dass DOM-Updates verarbeitet wurden
+        // und um die Summary-Funktion Zeit zu geben, selectedDateTimeSlots zu aktualisieren
+        setTimeout(() => {
+            updateFlatpickrDayMarkers();
+        }, 0);
+      }
   }
 
   confirmTimeSlotsBtn.addEventListener('click', function() {
       console.log("[Confirm Click] currentSelectedDateForModal beim Bestätigen:".blue, currentSelectedDateForModal);
       if (!currentSelectedDateForModal) {
-          console.error("[Confirm Click] currentSelectedDateForModal ist null! Kann Zeiten nicht zuordnen.");
-          timeSlotModal.style.display = 'none';
-          fp.redraw();
-          return;
+          console.warn("[Confirm Click] currentSelectedDateForModal ist null! Das sollte nicht passieren, wenn das Modal offen war.");
+          // Vorsichtshalber trotzdem die UI aktualisieren
       }
       timeSlotModal.style.display = 'none';
-      updateAvailabilitySummaryAndHiddenInput();
-      fp.redraw(); 
+      updateAvailabilitySummaryAndHiddenInput(); // Aktualisiert Text und verstecktes Feld
+      updateFlatpickrDayMarkers(); // Aktualisiert die Tagesmarker im Kalender
   });
 
   function updateAvailabilitySummaryAndHiddenInput() {
@@ -727,17 +826,46 @@
 
   closeTimeModalBtn.onclick = function() {
       timeSlotModal.style.display = 'none';
-      fp.redraw();
+      updateAvailabilitySummaryAndHiddenInput(); 
+      updateFlatpickrDayMarkers();
   }
 
   window.addEventListener('click', function(event) {
       if (event.target == timeSlotModal) {
           timeSlotModal.style.display = 'none';
-          fp.redraw(); 
+          updateAvailabilitySummaryAndHiddenInput();
+          updateFlatpickrDayMarkers();
       }
   });
 
   updateAvailabilitySummaryAndHiddenInput();
+
+  function updateFlatpickrDayMarkers() {
+    if (!fp || typeof fp.redraw !== 'function') {
+        console.warn("Flatpickr Instanz (fp) nicht verfügbar für updateFlatpickrDayMarkers");
+        return;
+    }
+
+    // Entferne zuerst alle bestehenden benutzerdefinierten Tagesklassen, die wir verwenden
+    const days = fp.calendarContainer.querySelectorAll('.flatpickr-day');
+    days.forEach(dayElem => {
+        dayElem.classList.remove('flatpickr-day-has-user-slots'); 
+        // Falls Sie andere Klassen für Firestore-Verfügbarkeit hatten, diese auch entfernen
+    });
+
+    // Füge die Klasse für Tage hinzu, an denen der Nutzer Termine ausgewählt hat
+    Object.keys(selectedDateTimeSlots).forEach(dateKey => {
+        if (selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
+            const dayElement = fp.getDateElem(new Date(dateKey + 'T00:00:00')); // Stelle sicher, dass die Zeitkomponente neutral ist
+            if (dayElement) {
+                dayElement.classList.add('flatpickr-day-has-user-slots');
+            }
+        }
+    });
+    
+    fp.redraw(); // Zeichne den Kalender neu, um die Änderungen der Klassen anzuzeigen
+    console.log("[Update Flatpickr Markers] Markers updated based on selectedDateTimeSlots:", JSON.parse(JSON.stringify(selectedDateTimeSlots)) );
+  }
 
   (function enableConsoleColors() {
       if (typeof window.console.colorsEnabled !== 'undefined') return;
