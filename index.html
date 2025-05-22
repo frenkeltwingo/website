@@ -941,6 +941,180 @@ window.onclick = function(event) {
     modal.style.display = 'none';
   }
 }
+
+// New Firestore-integrated form submission logic
+document.addEventListener('DOMContentLoaded', function() {
+    const applicationForm = document.getElementById('applicationForm');
+    const detailedAvailabilityInput = document.getElementById('detailedAvailability'); // Used for formsubmit.co
+    const submitButton = applicationForm ? applicationForm.querySelector('button[type="submit"]') : null;
+
+    if (applicationForm && submitButton) {
+        applicationForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // PREVENT default form submission to formsubmit.co
+            console.log("[Form Submit Entry] Application form submission initiated.");
+
+            if (submitButton.disabled) {
+                console.warn("[Form Submit] Submit button is already disabled. Aborting.");
+                return;
+            }
+            submitButton.disabled = true;
+            submitButton.textContent = 'Verarbeite...';
+
+            // Check if Firebase functions are globally available
+            if (!window.db || !window.setDoc || !window.doc || !window.Timestamp || !window.serverTimestamp || !window.collection) {
+                alert('Fehler: Wichtige Hintergrunddienste (Firebase) sind nicht korrekt initialisiert. Bitte laden Sie die Seite neu oder kontaktieren Sie den Support.');
+                console.error("[Form Submit] Firebase functions not available on window object.");
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Collect applicant data from form
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const cityInput = document.getElementById('city');
+            const coverletterInput = document.getElementById('coverletter');
+            const driversLicenseBCheckbox = document.getElementById('driversLicenseB');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+            const city = cityInput ? cityInput.value.trim() : '';
+            const coverletter = coverletterInput ? coverletterInput.value.trim() : '';
+            const driversLicenseB = driversLicenseBCheckbox ? driversLicenseBCheckbox.checked : false;
+
+            // Basic validation (HTML 'required' should also be used)
+            if (!name) {
+                alert('Bitte geben Sie Ihren Namen ein.');
+                nameInput?.focus();
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+            if (!email) { // Consider adding email format validation here as well
+                alert('Bitte geben Sie Ihre E-Mail-Adresse ein.');
+                emailInput?.focus();
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+            if (!driversLicenseB) {
+                alert('Bitte bestätigen Sie, dass Sie einen Führerschein der Klasse B besitzen.');
+                driversLicenseBCheckbox?.focus();
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Check if time slots were selected (using the global selectedDateTimeSlots variable)
+            if (typeof selectedDateTimeSlots === 'undefined' || Object.keys(selectedDateTimeSlots).length === 0) {
+                alert('Bitte wählen Sie mindestens einen Wunschtermin für das Bewerbungsgespräch aus.');
+                document.getElementById('availability')?.focus(); // Focus on the Flatpickr input
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Populate the hidden field for formsubmit.co (contains the selected slots as JSON)
+            if (detailedAvailabilityInput) {
+                detailedAvailabilityInput.value = JSON.stringify(selectedDateTimeSlots);
+            } else {
+                console.warn('[Form Submit] Hidden field #detailedAvailability not found. Detailed time slots will not be sent to formsubmit.co.');
+            }
+
+            console.log("[Form Submit] Attempting to book slots in Firestore:", JSON.parse(JSON.stringify(selectedDateTimeSlots)));
+            const bookingPromises = [];
+            const successfullyBookedSlotsForFeedback = [];
+
+            for (const dateStr in selectedDateTimeSlots) {
+                if (selectedDateTimeSlots.hasOwnProperty(dateStr) && selectedDateTimeSlots[dateStr].length > 0) {
+                    const times = selectedDateTimeSlots[dateStr];
+                    times.forEach(timeStr => { // e.g., timeStr is "09:00"
+                        const docId = `${dateStr}_${timeStr}`; // e.g., "2024-07-25_09:00"
+
+                        // Create JS Date object from dateStr and timeStr for Firestore Timestamp
+                        const [year, month, day] = dateStr.split('-').map(Number);
+                        const [hour, minute] = timeStr.split(':').map(Number);
+                        const slotDateObject = new Date(year, month - 1, day, hour, minute); // JS month is 0-indexed
+
+                        const bookingData = {
+                            slotDateTime: window.Timestamp.fromDate(slotDateObject), // Convert JS Date to Firestore Timestamp
+                            bookedAt: window.serverTimestamp(), // Server timestamp for booking creation
+                            applicantInfo: {
+                                name: name,
+                                email: email,
+                                phone: phone,
+                                city: city,
+                                coverletter: coverletter
+                            },
+                            driversLicenseConfirmed: driversLicenseB
+                            // Add any other data you want to store for the booking
+                        };
+
+                        const bookingDocRef = window.doc(window.db, "bookedInterviewSlots", docId);
+                        
+                        // Add the setDoc promise to the array. 
+                        // Using setDoc will create the document or overwrite it if it already exists with this ID.
+                        // For true "only create if not exists" and to handle race conditions more robustly,
+                        // Firestore Transactions would be the next step, but this is a good start.
+                        bookingPromises.push(
+                            window.setDoc(bookingDocRef, bookingData)
+                                .then(() => {
+                                    console.log(`[Form Submit] Slot ${docId} successfully written to Firestore.`);
+                                    successfullyBookedSlotsForFeedback.push(`- ${formatDateForDisplay(dateStr)} um ${timeStr} Uhr`);
+                                })
+                                .catch(error => {
+                                    console.error(`[Form Submit] Error writing slot ${docId} to Firestore: `, error);
+                                    // Re-throw to make Promise.all fail
+                                    throw new Error(`Fehler beim Buchen des Termins ${formatDateForDisplay(dateStr)} um ${timeStr} Uhr: ${error.message}`); 
+                                })
+                        );
+                    });
+                }
+            }
+
+            try {
+                await Promise.all(bookingPromises); // Wait for all Firestore writes to complete
+                console.log("[Form Submit] All selected slots successfully written to Firestore.");
+
+                let successMessage = 'Ihre Terminauswahl wurde erfolgreich in unserer Datenbank gespeichert.';
+                if (successfullyBookedSlotsForFeedback.length > 0) {
+                    successMessage += '\n\nGespeicherte Termine:\n' + successfullyBookedSlotsForFeedback.join('\n');
+                }
+                successMessage += '\n\nIhre Bewerbung wird jetzt an unser Team weitergeleitet.';
+                alert(successMessage);
+
+                // NOW, submit the original form to formsubmit.co
+                console.log("[Form Submit] Submitting form to formsubmit.co");
+                applicationForm.submit(); 
+
+                // Optional: Clear selected slots and reset form after successful submission
+                // selectedDateTimeSlots = {}; 
+                // if (typeof updateAvailabilitySummaryAndHiddenInput === 'function') updateAvailabilitySummaryAndHiddenInput();
+                // if (typeof updateFlatpickrDayMarkers === 'function') updateFlatpickrDayMarkers();
+                // applicationForm.reset(); // Resets form fields
+                // if(modal) modal.style.display = 'none'; // Close the application modal
+
+            } catch (error) {
+                console.error("[Form Submit] One or more slots could not be booked in Firestore:", error);
+                alert('Fehler: Mindestens einer Ihrer ausgewählten Termine konnte nicht in unserer Datenbank gespeichert werden. \n' +
+                      'Möglicherweise wurde ein Termin in der Zwischenzeit von jemand anderem belegt. Bitte überprüfen Sie Ihre Auswahl und versuchen Sie es erneut.\n\n' +
+                      'Details: ' + error.message);
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+            }
+        });
+    } else {
+        if (!applicationForm) console.error('[Form Submit Init] Application form (#applicationForm) not found.');
+        if (!submitButton) console.error('[Form Submit Init] Submit button within the form not found.');
+    }
+
+    // Helper function (ensure it's available or defined here if not globally)
+    // function formatDateForDisplay(dateStr) { ... } // Already defined in your previous script block
+});
+
 </script>
 
 </body>
