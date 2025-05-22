@@ -1273,9 +1273,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Optional: Clear selected slots and reset form can still be done here if desired immediately
                 // or moved to after formsubmit.co if that makes more sense (but then state is lost on redirect)
-                selectedDateTimeSlots = {}; 
-                if (typeof updateAvailabilitySummaryAndHiddenInput === 'function') updateAvailabilitySummaryAndHiddenInput();
-                if (typeof updateFlatpickrDayMarkers === 'function') updateFlatpickrDayMarkers();
+                // The lines below were causing the detailedAvailability to be empty for Google Sheets:
+                // selectedDateTimeSlots = {}; 
+                // if (typeof updateAvailabilitySummaryAndHiddenInput === 'function') updateAvailabilitySummaryAndHiddenInput();
+                // if (typeof updateFlatpickrDayMarkers === 'function') updateFlatpickrDayMarkers();
                 // We might not want to reset the entire form or close the main modal immediately,
                 // as the user first needs to see and confirm the notification.
                 // applicationForm.reset(); 
