@@ -596,6 +596,7 @@
   // Store selected date-time slots
   let selectedDateTimeSlots = {};
   let currentSelectedDateForModal = null; 
+  let fp; // Declare fp here to make it accessible throughout the script
 
   // Get modal elements
   const timeSlotModal = document.getElementById('timeSlotModal');
@@ -620,7 +621,7 @@
     // }
 
     console.log("Starte Flatpickr-Initialisierung auf #availability (Popup-Modus, V17.3 - zurückgesetzt).");
-    const fp = flatpickr(availabilityInput, { 
+    fp = flatpickr(availabilityInput, { // Assign to the globally declared fp
         mode: "single", // WIEDER HINZUGEFÜGT (wie in V17.3)
         dateFormat: "Y-m-d", 
         defaultDate: null,
