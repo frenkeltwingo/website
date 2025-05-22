@@ -250,6 +250,11 @@ h3 {
     text-decoration: underline;
 }
 
+.impressum-data.company-name strong {
+  font-size: 1.2em; /* Relative Vergrößerung */
+  /* color: var(--accent-color); /* Akzentfarbe zur Hervorhebung - ENTFERNT */
+  /* Optional: margin-bottom hinzufügen, falls mehr Abstand nach unten gewünscht ist */
+}
 
 /* Modal Styles (from index.html) */
 .modal {
@@ -341,6 +346,10 @@ h3 {
 .modal-content .cta-button {
     width: 100%;
     margin-top: 1rem;
+}
+
+#formStep2 {
+  display: none; /* Initial step 2 of the form hidden */
 }
 
 .close-btn, /* Covers both .close-btn and .close-time-modal-btn */
@@ -703,3 +712,32 @@ input#availability[readonly] { /* Input for Flatpickr */
     margin-bottom: 0.25rem;
   }
 } 
+
+/* Utility class for text centering sections */
+.text-center {
+  text-align: center;
+}
+
+.text-center h1,
+.text-center h2,
+.text-center h3,
+.text-center p {
+  /* Optional: if specific elements inside should not inherit text-align 
+     or need different alignment, override here. 
+     For now, let them inherit or be centered. */
+}
+
+.tagline {
+  font-size: 1.5rem; /* Example size, adjust as needed */
+  font-weight: normal; /* Or bold, depending on desired emphasis */
+  color: var(--text-color-secondary); /* Or a different color */
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Footer Styles - Placeholder if needed later */
+/*
+footer {
+
+}
+*/ 

@@ -552,34 +552,41 @@
     <h2>Online Bewerben</h2>
     <form id="applicationForm" action="https://formsubmit.co/contact@northdrive.team" method="POST">
       <input type="hidden" name="_subject" value="Neue Bewerbung von NorthDrive Webseite!">
-      <input type="hidden" name="_webhook" value="https://script.google.com/macros/s/AKfycbxR583fHkgrVmjsywjbDC_Y30Vyk7hrQr0z0RF7OKgV0RZS1cdLjBYv4P7T-tXGUgdx/exec">      <input type="hidden" id="detailedAvailability" name="detailedAvailability">
-      
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required>
-      
-      <label for="email">E-Mail:</label>
-      <input type="email" id="email" name="email" required>
+      <input type="hidden" name="_webhook" value="https://script.google.com/macros/s/AKfycbxR583fHkgrVmjsywjbDC_Y30Vyk7hrQr0z0RF7OKgV0RZS1cdLjBYv4P7T-tXGUgdx/exec">
+      <input type="hidden" id="detailedAvailability" name="detailedAvailability">
 
-      <label for="phone">Telefonnummer:</label>
-      <input type="tel" id="phone" name="phone" required>
+      <div id="formStep1">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="email">E-Mail:</label>
+        <input type="email" id="email" name="email" required>
 
-      <label for="city">Wohnort:</label>
-      <input type="text" id="city" name="city" required>
+        <label for="phone">Telefonnummer:</label>
+        <input type="tel" id="phone" name="phone" required>
 
-      <label for="availability">Wunschtermine für Bewerbungsgespräch (Dauer ca. 1 Std.):</label>
-      <p style="font-size: 0.85rem; color: var(--text-color-secondary); margin-top: -0.75rem; margin-bottom: 1rem;">Bitte wählen Sie möglichst mehrere Termine an verschiedenen Tagen aus, um die Wahrscheinlichkeit einer passenden Übereinstimmung zu erhöhen.</p>
-      <input type="text" id="availability" name="availability_summary" placeholder="Klicken, um Termine auszuwählen...">
-      <div id="availabilityDetailsPreview"></div>
+        <label for="city">Wohnort:</label>
+        <input type="text" id="city" name="city" required>
 
-      <label for="coverletter">Motivationsschreiben (optional):</label>
-      <textarea id="coverletter" name="coverletter" rows="5"></textarea>
-
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="driversLicenseB" name="driversLicenseB" value="bestaetigt" required>
-        <label for="driversLicenseB" class="checkbox-label">Ich bestätige, dass ich einen Führerschein der Klasse B besitze (Pflichtfeld).</label>
+        <button type="button" id="nextStepBtn" class="cta-button" style="margin-top: 1.5rem;">Weiter</button>
       </div>
-      
-      <button type="submit" class="cta-button">Bewerbung senden</button>
+
+      <div id="formStep2">
+        <label for="availability">Wunschtermine für Bewerbungsgespräch (Dauer ca. 1 Std.):</label>
+        <p style="font-size: 0.85rem; color: var(--text-color-secondary); margin-top: -0.75rem; margin-bottom: 1rem;">Bitte wählen Sie einen verbindlichen Termin für Ihr Online-Bewerbungsgespräch aus. Das Gespräch findet über Microsoft Teams statt.</p>
+        <input type="text" id="availability" name="availability_summary" placeholder="Klicken, um einen Termin auszuwählen...">
+        <div id="availabilityDetailsPreview"></div>
+
+        <label for="coverletter">Motivationsschreiben (optional):</label>
+        <textarea id="coverletter" name="coverletter" rows="5"></textarea>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="driversLicenseB" name="driversLicenseB" value="bestaetigt" required>
+          <label for="driversLicenseB" class="checkbox-label">Ich bestätige, dass ich einen Führerschein der Klasse B besitze (Pflichtfeld).</label>
+        </div>
+        
+        <button type="submit" class="cta-button">Bewerbung senden</button>
+      </div>
     </form>
   </div>
 </div>
@@ -938,6 +945,36 @@
 
   // Initial call to set summary and hidden input based on current state (likely empty on page load)
   updateAvailabilitySummaryAndHiddenInput();
+
+  // --- Multi-step form logic ---
+  const formStep1 = document.getElementById('formStep1');
+  const formStep2 = document.getElementById('formStep2');
+  const nextStepBtn = document.getElementById('nextStepBtn');
+
+  if (nextStepBtn && formStep1 && formStep2) {
+    nextStepBtn.addEventListener('click', function() {
+      // Validate fields in Step 1
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const city = document.getElementById('city').value.trim();
+
+      if (!name || !email || !phone || !city) {
+        showNotification('Validierungsfehler', 'Bitte füllen Sie alle Pflichtfelder im ersten Schritt aus (Name, E-Mail, Telefon, Wohnort).', 'error');
+        // Highlight first invalid field (optional, simple focus for now)
+        if (!name) document.getElementById('name').focus();
+        else if (!email) document.getElementById('email').focus();
+        else if (!phone) document.getElementById('phone').focus();
+        else if (!city) document.getElementById('city').focus();
+        return;
+      }
+
+      // If validation passes, switch steps
+      formStep1.style.display = 'none';
+      formStep2.style.display = 'block'; // Or 'flex' or 'grid' if it uses that
+    });
+  }
+  // --- End multi-step form logic ---
 
   function updateFlatpickrDayMarkers() {
     console.log("[Update Markers Entry] Funktion updateFlatpickrDayMarkers betreten.");
