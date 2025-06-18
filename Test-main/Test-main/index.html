@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NorthDrive - Werde Fahrzeugüberführer (m/w/d)</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Make the input a positioning context for the pseudo-element */
+    input#availability.flatpickr-input {
+      position: relative;
+    }
+
+    /* CSS-Fix für Flatpickr Placeholder auf iOS */
+    .flatpickr-input[placeholder]:not(:placeholder-shown)::before {
+      content: attr(placeholder);
+      color: #aaa; /* Oder eine andere passende Farbe für den Platzhalter */
+      position: absolute;
+      /* Cover the entire parent input area */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* Use box-sizing border-box for predictable padding */
+      box-sizing: border-box;
+      /* Internal padding for the text */
+      padding-left: 0.8rem; /* Ensure this matches input's actual padding */
+      padding-right: 0.8rem; /* Ensure this matches input's actual padding */
+
+      display: flex; /* Für vertikale Zentrierung */
+      align-items: center; /* Vertikal zentrierter Text */
+      pointer-events: none; /* Damit Klicks weiterhin an das Input-Feld gehen */
+      white-space: nowrap; /* Umbruch verhindern */
+      overflow: hidden; /* Überlauf verstecken */
+      text-overflow: ellipsis; /* "..." bei Überlauf anzeigen */
+      line-height: normal; /* Ensure consistent line height */
+    }
+
+    /* Optional: Stelle sicher, dass das Input-Feld selbst transparent ist, wenn der Pseudo-Platzhalter angezeigt wird, oder passe das Styling an. */
+    /* Dies ist möglicherweise nicht für alle Setups erforderlich. */
+    .flatpickr-input[placeholder]:not(:placeholder-shown) {
+      /* color: transparent; */ /* Auskommentiert, da es ggf. zu Problemen führt, wenn Flatpickr den Wert setzt */
+    }
+
+    :root {
+      --bg-color: #1f2329;
+      --card-bg-color: #2a2f37;
+      --text-color-primary: #f0f0f0;
+      --text-color-secondary: #b0b0b0;
+      --accent-color: #00bfff;
+      --accent-color-darker: #009acd;
+      --border-color: #3a3f47;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color-primary);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .main-wrapper { width: 100%; max-width: 800px; }
+    .section {
+      background-color: var(--card-bg-color);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+    .hero { text-align: center; padding-bottom: 1.5rem; }
+    .logo { max-width: 330px; margin-bottom: 1.5rem; border-radius: 8px; }
+    
+    /* Styles for the new navigation menu */
+    .hero-nav {
+      margin-top: 1rem; /* Abstand über dem Menü */
+      margin-bottom: 2rem; /* Abstand unter dem Menü, vor dem Titel */
+    }
+    .hero-nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center; /* Zentriert die Menüpunkte */
+      gap: 2.5rem; /* Abstand zwischen den Menüpunkten */
+    }
+    .hero-nav li {
+      margin-bottom: 0; /* Überschreibt generelles li margin */
+    }
+    .hero-nav a {
+      text-decoration: none;
+      color: var(--text-color-secondary);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.5rem 0;
+      transition: color 0.2s ease;
+    }
+    .hero-nav a:hover,
+    .hero-nav a:focus {
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--accent-color); /* Unterstreichung beim Hover/Fokus */
+    }
+    /* Ende der Styles für das neue Navigationsmenü */
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--text-color-primary); /* Hauptüberschrift in Primärtextfarbe für stärksten Kontrast */
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: var(--accent-color); /* Subtitle mit Akzentfarbe */
+      margin-bottom: 2.5rem;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-bottom: 1.8rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+    h3 { /* Für Untertitel innerhalb von Sektionen, z.B. Einsatzgebiet/Start */
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-color-primary);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    ul { list-style: none; padding-left: 0; }
+    li {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+      color: var(--text-color-secondary);
+    }
+    .icon { /* Unicode-Icons für Listen */
+      color: var(--accent-color);
+      margin-right: 1rem;
+      font-size: 1.3rem;
+      line-height: 1.5;
+      width: 20px; /* Feste Breite für bessere Ausrichtung */
+      text-align: center;
+    }
+    .text-intro { /* Für die ersten paar einleitenden Sätze */
+        font-size: 1.1rem;
+        color: var(--text-color-primary);
+        margin-bottom: 1.5rem;
+    }
+    .cta-button {
+      display: inline-block;
+      background-color: var(--accent-color);
+      color: #fff; /* Sicherstellen, dass Text auf Button immer weiß ist */
+      padding: 1rem 2.5rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 1.5rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 191, 255, 0.3);
+    }
+    .cta-button:hover {
+      background-color: var(--accent-color-darker);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 191, 255, 0.4);
+    }
+    .contact-section { text-align: center; }
+    .contact-section p {
+        font-size: 1.1rem;
+        color: var(--text-color-secondary);
+        margin-bottom: 0.75rem;
+    }
+    .contact-section strong, /* Telefonnummer hervorheben */
+    .contact-section strong a { /* Stil auch für Links innerhalb von strong */
+        font-size: 1.4rem;
+        color: #FFFFFF !important; /* Geändert für maximalen Kontrast, mit !important */
+        font-weight: 700;
+        text-decoration: none !important; /* Verhindert Unterstreichung */
+    }
+    .final-greeting {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-top: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem 0.5rem; /* Weniger horizontales Padding am Body */
+      }
+      .main-wrapper {
+        padding: 0 0.5rem; /* Zusätzliches Padding für den Wrapper, falls Text sehr nah am Rand ist */
+      }
+      .section {
+        padding: 2rem 1.5rem; /* Weniger Padding in den Sektionen, aber oben/unten beibehalten */
+      }
+      /* Responsive Anpassungen für das neue Menü */
+      .hero-nav ul {
+        flex-direction: row !important; /* Erzwinge nebeneinander für Test */
+        gap: 1rem; /* Abstand vergrößert für bessere Lesbarkeit */
+        flex-wrap: nowrap; /* Verhindere Umbruch für Test */
+      }
+      .hero-nav a {
+        font-size: 0.9rem; /* Stark reduzierte Schriftgröße für Test - ANGEPASST */
+        padding: 0.4rem 0; /* Stark reduziertes Padding für Test - ANGEPASST */
+      }
+      /* Ende responsive Anpassungen */
+      h1 {
+        font-size: 1.9rem; /* Weiter reduziert für sehr schmale Bildschirme */
+        line-height: 1.25;
+      }
+      .hero-subtitle {
+        font-size: 1.1rem; /* Kleiner */
+        margin-bottom: 3rem; /* Vergrößerter Abstand zum Button */
+      }
+      h2 {
+        font-size: 1.6rem; /* Kleiner */
+        margin-bottom: 1.2rem;
+      }
+      h3 {
+        font-size: 1.1rem; /* Kleiner */
+      }
+      .cta-button {
+        padding: 0.9rem 1.5rem; /* Padding an Button angepasst */
+        font-size: 1rem;
+      }
+      .logo {
+        max-width: 270px; /* War 90px */
+      }
+      li {
+        font-size: 1rem;
+      }
+      .icon {
+        font-size: 1.1rem;
+        margin-right: 0.6rem;
+      }
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none; /* Initial versteckt */
+      position: fixed; /* Bleibt an Ort und Stelle beim Scrollen */
+      z-index: 1000; /* Über allem anderen */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Scrollen im Modal, falls Inhalt zu lang */
+      background-color: rgba(0,0,0,0.6); /* Halbtransparenter schwarzer Hintergrund */
+      padding-top: 60px; /* Abstand von oben */
+    }
+
+    .modal-content {
+      background-color: var(--card-bg-color);
+      color: var(--text-color-primary);
+      margin: 5% auto;
+      padding: 25px;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 80%;
+      max-width: 600px; /* Maximale Breite */
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    .modal-content h2 {
+        color: var(--accent-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .modal-content label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-color-secondary);
+        font-weight: 700;
+    }
+
+    .modal-content input[type="text"],
+    .modal-content input[type="email"],
+    .modal-content input[type="tel"],
+    .modal-content input[type="date"],
+    .modal-content input[type="datetime-local"],
+    .modal-content textarea {
+        width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 1rem; /* Einheitlicher Abstand nach unten */
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-color);
+        color: var(--text-color-primary);
+        font-size: 1rem;
+        display: block; /* Stellt sicher, dass Label darüber korrekt angezeigt wird */
+        box-sizing: border-box; /* Ensure padding and border are included in the width */
+        /* Hinzugefügt für korrekten Textüberlauf mit Ellipsis */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .modal-content textarea {
+        min-height: 100px; /* Mindesthöhe für Textarea */
+        resize: vertical; /* Nur vertikales Resizen erlauben */
+    }
+    
+    .modal-content input[type="text"]:focus,
+    .modal-content input[type="email"]:focus,
+    .modal-content input[type="tel"]:focus,
+    .modal-content textarea:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px var(--accent-color-darker);
+    }
+
+    .form-group { /* Allgemeine Gruppe für Formularfelder, falls benötigt */
+        margin-bottom: 1rem;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center; /* Vertikal zentrieren Checkbox und Label */
+        margin-bottom: 1.5rem; /* Etwas mehr Abstand für die Checkbox-Gruppe */
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: auto; /* Standardbreite für Checkbox */
+        flex-shrink: 0; /* Verhindert Schrumpfen der Checkbox */
+    }
+
+    .checkbox-label {
+        font-size: 0.95rem;
+        color: var(--text-color-secondary);
+        font-weight: normal; /* Standard Schriftgewicht für Checkbox Label */
+        /* display: inline; nicht mehr nötig da flexbox auf parent */
+        /* margin-bottom: 0; nicht mehr nötig */
+    }
+
+    .modal-content .cta-button {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .close-btn {
+      color: var(--text-color-secondary);
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      font-size: 28px;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+      color: var(--accent-color);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Styles for time slot modal items */
+    #timeSlotsContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+        max-height: 300px; /* Or adjust as needed */
+        overflow-y: auto;
+        padding: 5px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+    }
+
+    .time-slot-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        background-color: var(--bg-color);
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
+
+    .time-slot-item input[type="checkbox"] {
+        margin-right: 8px;
+        width: auto;
+    }
+
+    .time-slot-item label {
+        font-size: 0.95rem;
+        color: var(--text-color-secondary);
+        font-weight: normal;
+        margin-bottom: 0;
+    }
+
+    /* NEW Styles for clickable time slot blocks */
+    .time-slot-block {
+        padding: 12px 8px; /* Mehr Padding für größere Klickfläche */
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+        font-size: 0.95rem;
+        color: var(--text-color-secondary);
+        user-select: none; /* Verhindert Textauswahl beim Klicken */
+    }
+
+    .time-slot-block:hover {
+        border-color: var(--accent-color);
+    }
+
+    .time-slot-block.selected-slot {
+        background-color: var(--accent-color) !important;
+        color: #fff !important;
+        border-color: var(--accent-color-darker) !important;
+        font-weight: bold;
+    }
+
+    /* Style for Flatpickr days that have slots selected */
+    .flatpickr-day.flatpickr-day-has-slots {
+        background-color: var(--accent-color) !important;
+        color: #fff !important;
+        border-color: var(--accent-color-darker) !important;
+    }
+
+    /* Style for Flatpickr days where the user has selected specific time slots in the current session */
+    .flatpickr-day.flatpickr-day-has-user-slots {
+        background-color: var(--accent-color) !important; 
+        color: #fff !important;
+        border: 2px solid var(--accent-color-darker) !important; /* Deutlichere Hervorhebung */
+        font-weight: bold;
+        box-shadow: 0 0 5px var(--accent-color);
+    }
+    .flatpickr-day.flatpickr-day-has-user-slots:hover {
+        background-color: var(--accent-color-darker) !important;
+    }
+
+    /* Ensure the close button for the new modal is styled like the old one */
+    .close-time-modal-btn {
+      color: var(--text-color-secondary);
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      font-size: 28px;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
+
+    .close-time-modal-btn:hover,
+    .close-time-modal-btn:focus {
+      color: var(--accent-color);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Make sure the readonly input for Flatpickr still looks clickable */
+    input#availability[readonly] {
+        cursor: pointer;
+        background-color: var(--bg-color); /* Match other inputs for consistency */
+    }
+
+    /* Styles for Availability Details Preview */
+    #availabilityDetailsPreview {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: var(--text-color-secondary);
+    }
+    #availabilityDetailsPreview ul {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+    }
+    #availabilityDetailsPreview li {
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem; /* Ensure li font size matches preview div */
+        color: var(--text-color-secondary); /* Ensure li color matches preview div */
+        display: block; /* Override default li display if necessary */
+        align-items: normal; /* Override default li align if necessary */
+    }
+    #availabilityDetailsPreview li strong {
+        color: var(--text-color-primary);
+    }
+    /* Explizite CSS-Regeln für Popup-Verhalten des Kalenders */
+    .flatpickr-calendar {
+      display: none; /* Standardmäßig versteckt */
+    }
+    .flatpickr-calendar.open {
+      display: block; /* Sichtbar, wenn Flatpickr es öffnet */
+      z-index: 100000; /* Sicherstellen, dass es über anderen Elementen im Modal liegt */
+    }
+    /* Explizite CSS-Regeln für das TimeSlotModal */
+    #timeSlotModal {
+        display: none; /* Standardmäßig versteckt */
+        z-index: 100001; /* Noch höher als der Flatpickr-Kalender, um sicherzustellen, dass es darüber liegt */
+    }
+
+    /* Style for unavailable slots fetched from Firestore */
+    .time-slot-block.slot-unavailable {
+        background-color: var(--border-color); /* Dunkler, um Inaktivität anzuzeigen */
+        color: #6c757d; /* Gedämpfte Textfarbe */
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    .time-slot-block.slot-unavailable:hover {
+        border-color: var(--border-color); /* Kein Hover-Effekt für Akzentfarbe */
+        /* Optional: Verhindern, dass sich die Schriftfarbe beim Hover ändert, falls es einen generellen Hover-Effekt gibt */
+        color: #6c757d !important; 
+    }
+
+    /* Vergrößerter Abstand für das Bewerbungs-Label */
+    label[for="coverletter"] {
+      margin-top: 2.5rem !important; /* Viel größerer Abstand nach oben */
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+
+    <div class="section hero">
+      <img src="logo.png" alt="NorthDrive Logo" class="logo">
+      <nav class="hero-nav">
+        <ul>
+          <li><a href="index.html">Startseite</a></li>
+          <li><a href="team.html">Team</a></li>
+          <li><a href="ueber_uns.html">Über Uns</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+        </ul>
+      </nav>
+      <h1>Werde Fahrzeugüberführer (m/w/d) bei NorthDrive!</h1>
+      <p class="hero-subtitle">Dein flexibler Nebenjob: Deutschland entdecken &amp; Gutes Geld verdienen.</p>
+      <button id="openFormBtn" class="cta-button">Mehr erfahren &amp; Bewerben</button>
+    </div>
+
+    <div class="section">
+      <p class="text-intro">Du willst nicht den ganzen Tag am Schreibtisch sitzen und suchst einen flexiblen Nebenjob, der Dir Deutschland zeigt und trotzdem gut bezahlt ist? Dann bist Du bei uns genau richtig!</p>
+      <p class="text-intro">Wir suchen zuverlässige und motivierte Fahrer (m/w/d) zur Fahrzeugüberführung im gesamten Bundesgebiet. Ideal für Studenten, die gerne unterwegs sind und eigenverantwortlich arbeiten.</p>
+    </div>
+
+    <div class="section">
+      <h2>Das erwartet Dich &amp; unsere Vorteile:</h2>
+      <ul>
+        <li><span class="icon">&#128664;</span> Überführung von Fahrzeugen quer durch Deutschland</li>
+        <li><span class="icon">&#128196;</span> Sorgfältige Kontrolle und Dokumentation der Fahrzeuge</li>
+        <li><span class="icon">&#9992;</span> Reisen, Verantwortung übernehmen – und dabei Geld verdienen</li>
+        <li><span class="icon">&#128107;</span> Freundliches, unkompliziertes Team und flexible Einsatzzeiten</li>
+        <li><span class="icon">&#128640;</span> Deine Rückfahrt wird von uns organisiert – Du kommst sicher wieder nach Hause!</li>
+        <li><span class="icon">&#128176;</span> Faire Bezahlung pro Fahrt & Option auf spätere Festanstellung</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Dein Profil – Das bringst Du mit:</h2>
+      <ul>
+        <li><span class="icon">&#127959;</span> Führerschein Klasse B seit 2 Jahren (Pflicht)</li>
+        <li><span class="icon">&#128221;</span> Aktuelles Führungszeugnis (nicht älter als 3 Monate - Pflicht)</li>
+        <li><span class="icon">&#128170;</span> Selbstständige, pünktliche und zuverlässige Arbeitsweise</li>
+        <li><span class="icon">&#9203;</span> Hohe zeitliche Flexibilität und Engagement</li>
+        <li><span class="icon">&#127979;</span> 49€-Ticket (Deutschlandticket) ist von Vorteil</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Rahmenbedingungen:</h2>
+      <h3>Einsatzgebiet:</h3>
+      <p>Deutschlandweite Fahrzeugüberführungen. Bei Absprache auch europaweite Einsätze möglich.</p>
+      <h3>Start:</h3>
+      <p>Ab sofort oder nach individueller Absprache.</p>
+    </div>
+
+    <div class="section contact-section">
+      <h2>Interesse geweckt? Wir wollen Dich im Team!</h2>
+      <p>Bereit für Deinen neuen Nebenjob auf Deutschlands Straßen?</p>
+      <p>Dann melde Dich jetzt einfach per E-Mail:</p>
+      <p><strong>contact@northdrive.team</strong></p>
+      <a href="mailto:contact@northdrive.team" class="cta-button">Jetzt per E-Mail kontaktieren</a>
+      <p class="final-greeting">Wir freuen uns auf Deine Nachricht!</p>
+    </div>
+
+  </div>
+
+<div id="applicationModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h2>Online Bewerben</h2>
+    <form id="applicationForm">
+      <input type="hidden" id="detailedAvailability" name="detailedAvailability">
+
+      <div id="formStep1">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="email">E-Mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="phone">Telefonnummer:</label>
+        <input type="tel" id="phone" name="phone" required>
+
+        <label for="city">Wohnort:</label>
+        <input type="text" id="city" name="city" required>
+
+        <button type="button" id="nextStepBtn" class="cta-button" style="margin-top: 1.5rem;">Weiter</button>
+      </div>
+
+      <div id="formStep2">
+        <label for="availability">Wunschtermine für Bewerbungsgespräch (Dauer ca. 1 Std.):</label>
+        <p style="font-size: 0.85rem; color: var(--text-color-secondary); margin-top: -0.75rem; margin-bottom: 1rem;">Bitte wählen Sie einen verbindlichen Termin für Ihr Online-Bewerbungsgespräch aus. Das Gespräch findet über Microsoft Teams statt.</p>
+        <input type="text" id="availability" name="availability_summary" placeholder="Klicken, um einen Termin auszuwählen...">
+        <div id="availabilityDetailsPreview"></div>
+
+        <label for="coverletter">Bewerbung (Pflichtfeld):</label>
+        <textarea id="coverletter" name="coverletter" rows="5" required></textarea>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="driversLicenseB" name="driversLicenseB" value="bestaetigt" required>
+          <label for="driversLicenseB" class="checkbox-label">Ich bestätige, dass ich einen Führerschein der Klasse B besitze (Pflichtfeld).</label>
+        </div>
+        
+        <button type="submit" class="cta-button">Bewerbung senden</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="timeSlotModal" class="modal">
+  <div class="modal-content">
+    <span class="close-time-modal-btn">&times;</span>
+    <h2 id="timeSlotModalDate">Zeiten für den TAG auswählen</h2>
+    <div id="timeSlotsContainer">
+      <!-- Zeit-Slots werden hier dynamisch per JS eingefügt -->
+    </div>
+    <button id="confirmTimeSlotsBtn" class="cta-button" style="margin-top: 1.5rem;">Zeiten bestätigen</button>
+  </div>
+</div>
+
+<!-- Notification Modal -->
+<div id="notificationModal" class="modal">
+  <div class="modal-content notification-modal-content">
+    <span class="close-notification-btn">&times;</span>
+    <h2 id="notificationTitle"></h2>
+    <div id="notificationMessage"></div>
+    <button id="notificationCloseUserBtn" class="cta-button">OK</button> <!-- Renamed to avoid conflict if we reuse id for programmatic close -->
+  </div>
+</div>
+
+<script type="module">
+  // Firebase SDK v9+ modular imports from gstatic.com CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where, doc, setDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+  // Your web app's Firebase configuration for northdrive-fb0d6
+  const firebaseConfig = {
+    apiKey: "AIzaSyDC_sOZ1SZc-8laEaSh0X64gNeRzBCLtXA",
+    authDomain: "northdrive-fb0d6.firebaseapp.com",
+    projectId: "northdrive-fb0d6",
+    storageBucket: "northdrive-fb0d6.firebasestorage.app",
+    messagingSenderId: "33722601529",
+    appId: "1:33722601529:web:701846534ef7186a583de8",
+    measurementId: "G-6LDHW72B51"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app); // Google Analytics
+  const db = getFirestore(app); // Firestore Database
+  // Optional: Initialize other services like Auth, Storage if needed directly
+  // const auth = getAuth(app);
+  // const storage = getStorage(app);
+
+  // Make db and other Firebase services/functions globally available for your existing script blocks
+  // This is generally not recommended for new modular code, but might be needed for your existing older script blocks.
+  // Consider refactoring your older script blocks to import these directly.
+  window.db = db;
+  window.firebaseApp = app; // if needed
+  window.Timestamp = Timestamp; // Firestore Timestamp
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.getDocs = getDocs;
+  window.query = query;
+  window.where = where;
+  window.doc = doc;
+  window.setDoc = setDoc;
+  window.serverTimestamp = serverTimestamp;
+
+
+  // Your existing logic for checking Firebase initialization
+  if (db && Timestamp && collection && addDoc && getDocs && query && where && doc && setDoc && serverTimestamp) {
+    console.log("Firebase initialized successfully. Firestore (db) and its functions are available on the window object.");
+  } else {
+    console.error("Error initializing Firebase or making functions globally available.");
+  }
+
+  // Example of how you might use db in other parts of your script, if not refactored:
+  // async function getSomeData() {
+  //   const q = query(collection(window.db, "someCollection"));
+  //   const querySnapshot = await getDocs(q);
+  //   querySnapshot.forEach((doc) => {
+  //     console.log(doc.id, " => ", doc.data());
+  //   });
+  // }
+  // getSomeData();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  console.log("##### VERSION V17 - ZURÜCK ZUM POPUP-KALENDER #####"); 
+  // Store selected date-time slots
+  let selectedDateTimeSlots = {};
+  let currentSelectedDateForModal = null; 
+  let fp; // Declare fp here to make it accessible throughout the script
+
+  // Get modal elements
+  const timeSlotModal = document.getElementById('timeSlotModal');
+  const closeTimeModalBtn = document.querySelector('.close-time-modal-btn');
+  const timeSlotModalDateElem = document.getElementById('timeSlotModalDate');
+  const timeSlotsContainer = document.getElementById('timeSlotsContainer');
+  const confirmTimeSlotsBtn = document.getElementById('confirmTimeSlotsBtn');
+  const availabilityInput = document.getElementById('availability'); 
+  const detailedAvailabilityInput = document.getElementById('detailedAvailability'); 
+  const availabilityDetailsPreview = document.getElementById('availabilityDetailsPreview');
+
+  // Überprüfen, ob die Elemente existieren
+  if (availabilityInput) {
+    console.log("Element #availability gefunden.");
+    
+    availabilityInput.value = ""; // Zur Sicherheit leeren
+
+    // KEIN Versuch mehr, eine eventuell bereits existierende Instanz auf #availability zu zerstören (Rückgängig von V17.4)
+    // if (availabilityInput._flatpickr) {
+    //     console.warn("[FP V17.4] Zerstöre bestehende Flatpickr-Instanz auf #availability VOR Neuinitialisierung.");
+    //     availabilityInput._flatpickr.destroy();
+    // }
+
+    console.log("Starte Flatpickr-Initialisierung auf #availability (Popup-Modus, V17.3 - zurückgesetzt).");
+    fp = flatpickr(availabilityInput, { // Assign to the globally declared fp
+        mode: "single", // WIEDER HINZUGEFÜGT (wie in V17.3)
+        dateFormat: "Y-m-d", 
+        defaultDate: null,
+        allowInput: false, 
+        disableMobile: true, // Verhindert die native mobile Datumsauswahl
+        minDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Nur Buchungen ab übermorgen erlaubt
+        onChange: function(selectedDates, dateStr, instance) {
+            console.log("[FP V17.3 POPUP onChange] Funktion betreten. Mode: single.".cyan);
+            console.log("[FP V17.3 POPUP onChange] dateStr:".blue, dateStr, "selectedDates:".blue, selectedDates);
+
+            if (selectedDates.length > 0) {
+                const singleDateStr = instance.formatDate(selectedDates[0], "Y-m-d"); 
+                currentSelectedDateForModal = singleDateStr;
+
+                console.log("[FP V17.3 POPUP onChange] currentSelectedDateForModal gesetzt auf:".yellow, currentSelectedDateForModal);
+            
+                timeSlotModalDateElem.textContent = `Zeiten für ${formatDateForDisplay(currentSelectedDateForModal)} auswählen`;
+                populateTimeSlots(currentSelectedDateForModal); 
+                timeSlotModal.style.display = 'block';
+            } else {
+                console.log("[FP V17.3 POPUP onChange] Keine Daten ausgewählt (z.B. nach Clear).");
+            }
+        },
+        onReady: function(selectedDates, dateStr, instance){
+            console.log("Flatpickr V17.3 (Popup auf #availability, Mode: Single - zurückgesetzt) ist BEREIT!".cyan, instance);
+            // console.log("[FP V17.4 onReady] Aktueller Modus der Instanz:", instance.config.mode); // Log von V17.4 entfernt
+        }
+    });
+    console.log("Flatpickr V17.3 Initialisierung (Popup auf #availability, Mode: Single - zurückgesetzt) abgeschlossen. fp Instanz:", fp);
+    // Initial marker update after Flatpickr is ready
+    updateFlatpickrDayMarkers(); 
+
+  } else {
+    if (!availabilityInput) console.error("FEHLER: Element #availability NICHT gefunden!");
+  }
+
+  function formatDateForDisplay(dateStr) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+          const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          return date.toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      return dateStr;
+  }
+
+  async function populateTimeSlots(dateStr) {
+      console.log("[Populate Time Slots V3 - Single Slot Radio] Date:", dateStr, "Current selection for this date:", selectedDateTimeSlots[dateStr]);
+      timeSlotsContainer.innerHTML = '<p style="text-align:center; color: var(--text-color-secondary);">Lade verfügbare Zeiten...</p>'; 
+
+      const bookedFirebaseTimes = new Set();
+
+      try {
+          if (!window.db || !window.query || !window.collection || !window.where || !window.getDocs || !window.Timestamp) {
+              console.error("Firestore ist nicht initialisiert oder erforderliche Funktionen fehlen auf window.");
+              timeSlotsContainer.innerHTML = '<p style="text-align:center; color: red;">Fehler beim Laden der Zeiten. Firebase nicht bereit.</p>';
+              return;
+          }
+
+          const [year, month, day] = dateStr.split('-').map(Number);
+          // Wichtig: Monat ist 0-indiziert in JavaScript Date Objekten
+          const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+          const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+          const startOfDayTimestamp = window.Timestamp.fromDate(startOfDay);
+          const endOfDayTimestamp = window.Timestamp.fromDate(endOfDay);
+
+          console.log(`[Populate Time Slots V3 - Single Slot Radio] Querying for slots between ${startOfDay.toISOString()} and ${endOfDay.toISOString()}`);
+
+          const q = window.query(
+              window.collection(window.db, "bookedInterviewSlots"),
+              window.where("slotDateTime", ">=", startOfDayTimestamp),
+              window.where("slotDateTime", "<=", endOfDayTimestamp)
+          );
+
+          const querySnapshot = await window.getDocs(q);
+          querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              if (data.slotDateTime) {
+                  const bookedDate = data.slotDateTime.toDate(); // Konvertiert Firestore Timestamp zu JS Date
+                  // Stellt sicher, dass wir nur Termine für den exakten Tag nehmen, falls die Query zu breit ist (sollte sie aber nicht sein)
+                  if (bookedDate.getFullYear() === year && (bookedDate.getMonth() + 1) === month && bookedDate.getDate() === day) {
+                      const hours = String(bookedDate.getHours()).padStart(2, '0');
+                      const minutes = String(bookedDate.getMinutes()).padStart(2, '0');
+                      bookedFirebaseTimes.add(`${hours}:${minutes}`);
+                  }
+              }
+          });
+          console.log("[Populate Time Slots V3 - Single Slot Radio] Booked times from Firestore for", dateStr, ":", Array.from(bookedFirebaseTimes));
+          timeSlotsContainer.innerHTML = ''; // Clear loading indicator
+          if (querySnapshot.empty && bookedFirebaseTimes.size === 0) {
+            // Optional: Message if no slots are booked yet for this day in Firestore
+            // console.log("[Populate Time Slots V3 - Single Slot Radio] No slots booked in Firestore for this day.");
+          }
+
+      } catch (error) {
+          console.error("[Populate Time Slots V3 - Single Slot Radio] Error fetching booked slots from Firestore:", error);
+          timeSlotsContainer.innerHTML = '<p style="text-align:center; color: red;">Fehler beim Laden der Verfügbarkeiten aus der Datenbank.</p>';
+          // Optionally, still render slots but without availability info or show a clearer error
+          // return; // Early exit if critical
+      }
+
+      // Erlaube nur Slots von 09:00 bis 20:00 Uhr
+      const hours = Array.from({length: 12}, (_, i) => `${String(i+9).padStart(2, '0')}:00`);
+      // For single selection, previouslySelectedTimes will be an array with 0 or 1 item
+      const previouslySelectedTime = (selectedDateTimeSlots[dateStr] && selectedDateTimeSlots[dateStr][0]) || null;
+
+      if (hours.length === 0) {
+          timeSlotsContainer.innerHTML = '<p style="text-align:center; color: var(--text-color-secondary);">Keine Zeit-Slots für diesen Tag konfiguriert.</p>';
+          return;
+      }
+
+      // Create a form or a div to group radio buttons for styling and accessibility
+      const radioGroup = document.createElement('div');
+      radioGroup.classList.add('time-slot-radio-group');
+
+      hours.forEach(hour => {
+          const slotWrapper = document.createElement('div');
+          slotWrapper.classList.add('time-slot-radio-item');
+
+          const radioButton = document.createElement('input');
+          radioButton.type = 'radio';
+          radioButton.name = `timeSlotFor_${dateStr.replace(/-/g, '_')}`; // Ensure valid name, replace hyphens
+          radioButton.id = `slot_${dateStr.replace(/-/g, '_')}_${hour.replace(':','')}`;
+          radioButton.value = hour;
+          radioButton.dataset.hour = hour; 
+
+          const label = document.createElement('label');
+          label.htmlFor = radioButton.id;
+          label.textContent = hour;
+
+          if (bookedFirebaseTimes.has(hour)) {
+              radioButton.disabled = true;
+              slotWrapper.classList.add('slot-unavailable'); 
+              label.title = "Dieser Termin ist bereits vergeben.";
+          } else {
+              if (previouslySelectedTime === hour) {
+                  radioButton.checked = true;
+                  // We can add a selected class to the wrapper/label if needed for further styling beyond :checked
+                  slotWrapper.classList.add('selected-slot'); 
+              }
+
+              radioButton.addEventListener('change', function() {
+                  if (this.checked) {
+                      console.log(`[Radio Change] Date: ${currentSelectedDateForModal}, Hour: ${this.value} selected.`);
+                      selectedDateTimeSlots[currentSelectedDateForModal] = [this.value];
+                      
+                      // Update .selected-slot class for all items in this group
+                      radioGroup.querySelectorAll('.time-slot-radio-item').forEach(item => {
+                          item.classList.remove('selected-slot');
+                      });
+                      this.closest('.time-slot-radio-item').classList.add('selected-slot');
+
+                  } else {
+                      // This case should not happen for radio buttons in a group if one is always selected after first click
+                      // However, if we allow unchecking (e.g. by clicking selected radio again, which is not standard)
+                      // selectedDateTimeSlots[currentSelectedDateForModal] = [];
+                  }
+                  console.log("[Radio Change] selectedDateTimeSlots updated:", JSON.parse(JSON.stringify(selectedDateTimeSlots)));
+                  updateAvailabilitySummaryAndHiddenInput(); 
+              });
+          }
+          slotWrapper.appendChild(radioButton);
+          slotWrapper.appendChild(label);
+          radioGroup.appendChild(slotWrapper);
+      });
+      timeSlotsContainer.appendChild(radioGroup);
+
+      // After rendering, update Flatpickr day markers
+      if (fp && typeof fp.redraw === 'function') {
+        // Verzögerung, um sicherzustellen, dass DOM-Updates verarbeitet wurden
+        // und um die Summary-Funktion Zeit zu geben, selectedDateTimeSlots zu aktualisieren
+        setTimeout(() => {
+            updateFlatpickrDayMarkers();
+        }, 0);
+      }
+  }
+
+  confirmTimeSlotsBtn.addEventListener('click', function() {
+      console.log("[Confirm Click Entry] confirmTimeSlotsBtn clicked.");
+      console.log("[Confirm Click] currentSelectedDateForModal beim Bestätigen:".blue, currentSelectedDateForModal);
+      
+      if (!currentSelectedDateForModal) {
+          console.warn("[Confirm Click] currentSelectedDateForModal ist null! Das sollte nicht passieren, wenn das Modal offen war.");
+      }
+      // Die Logik zum Speichern der aktuell im Modal ausgewählten Slots für currentSelectedDateForModal
+      // ist bereits im Click-Handler der time-slot-block Elemente enthalten.
+      // Hier müssen wir nur das Modal schließen und die UI aktualisieren.
+      if (timeSlotModal) timeSlotModal.style.display = 'none'; else console.error("[Confirm Click] timeSlotModal nicht gefunden!");
+      
+      console.log("[Confirm Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
+      updateAvailabilitySummaryAndHiddenInput(); // Aktualisiert Text und verstecktes Feld
+      console.log("[Confirm Click] Rufe updateFlatpickrDayMarkers auf.");
+      updateFlatpickrDayMarkers(); // Aktualisiert die Tagesmarker im Kalender
+      console.log("[Confirm Click Exit] Event-Listener abgearbeitet.");
+  });
+
+  function updateAvailabilitySummaryAndHiddenInput() {
+      console.log("[Update Summary Entry V2 - Single Slot] Funktion betreten.");
+      if (!availabilityInput || !availabilityDetailsPreview || !detailedAvailabilityInput) {
+          console.error("[Update Summary] Eines der Kern-UI-Elemente nicht gefunden!");
+          return;
+      }
+
+      let summaryText = 'Klicken, um einen Termin auszuwählen...';
+      let previewHtml = '';
+      let hasSelection = false;
+
+      // Iterate through selectedDateTimeSlots to find the single selected slot (if any)
+      for (const dateKey in selectedDateTimeSlots) {
+          if (selectedDateTimeSlots.hasOwnProperty(dateKey) && selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
+              const selectedTime = selectedDateTimeSlots[dateKey][0]; // Get the single time
+              const formattedDate = formatDateForDisplay(dateKey);
+              summaryText = `Termin: ${formattedDate} um ${selectedTime} Uhr`;
+              previewHtml = `<ul><li><strong>${formattedDate}:</strong> ${selectedTime} Uhr</li></ul>`;
+              hasSelection = true;
+              break; // Since we only allow one selection, break after finding it
+          }
+      }
+      
+      availabilityInput.value = summaryText;
+      // Passe die Textfarbe basierend darauf an, ob ein Termin ausgewählt wurde oder der Platzhaltertext angezeigt wird
+      if (hasSelection) {
+        availabilityInput.style.color = 'var(--text-color-primary)'; // Normale Textfarbe für ausgewählten Termin
+      } else {
+        availabilityInput.style.color = 'var(--text-color-secondary)'; // Gedimmte Farbe für Platzhaltertext
+      }
+
+      availabilityDetailsPreview.innerHTML = previewHtml;
+      detailedAvailabilityInput.value = JSON.stringify(selectedDateTimeSlots); // Still send the same structure
+
+      console.log("[Update Summary V2 - Single Slot] detailedAvailabilityInput.value gesetzt auf:", detailedAvailabilityInput.value);
+      console.log("[Update Summary V2 - Single Slot Exit] Funktion beendet.");
+      // Ensure Flatpickr markers are updated after summary changes
+      updateFlatpickrDayMarkers(); 
+  }
+
+  if (closeTimeModalBtn) {
+    closeTimeModalBtn.onclick = function() {
+        console.log("[Close Click Entry] closeTimeModalBtn geklickt.");
+        if (timeSlotModal) timeSlotModal.style.display = 'none'; else console.error("[Close Click] timeSlotModal nicht gefunden!");
+        console.log("[Close Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
+        updateAvailabilitySummaryAndHiddenInput(); 
+        console.log("[Close Click] Rufe updateFlatpickrDayMarkers auf.");
+        updateFlatpickrDayMarkers();
+        console.log("[Close Click Exit] Event-Listener abgearbeitet.");
+    }
+  } else {
+    console.error("Element .close-time-modal-btn nicht gefunden!");
+  }
+
+  window.addEventListener('click', function(event) {
+      // Nur ausführen, wenn das timeSlotModal Element existiert und sichtbar ist
+      if (timeSlotModal && timeSlotModal.style.display === 'block' && event.target == timeSlotModal) {
+          console.log("[Window Click Entry] Außerhalb des timeSlotModal geklickt, während es sichtbar ist.");
+          timeSlotModal.style.display = 'none';
+          console.log("[Window Click] Rufe updateAvailabilitySummaryAndHiddenInput auf.");
+          updateAvailabilitySummaryAndHiddenInput();
+          console.log("[Window Click] Rufe updateFlatpickrDayMarkers auf.");
+          updateFlatpickrDayMarkers();
+          console.log("[Window Click Exit] Event-Listener abgearbeitet.");
+      }
+  });
+
+  // Initial call to set summary and hidden input based on current state (likely empty on page load)
+  updateAvailabilitySummaryAndHiddenInput();
+
+  // --- Multi-step form logic ---
+  const formStep1 = document.getElementById('formStep1');
+  const formStep2 = document.getElementById('formStep2');
+  const nextStepBtn = document.getElementById('nextStepBtn');
+
+  if (nextStepBtn && formStep1 && formStep2) {
+    nextStepBtn.addEventListener('click', function() {
+      // Validate fields in Step 1
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const city = document.getElementById('city').value.trim();
+
+      if (!name || !email || !phone || !city) {
+        showNotification('Validierungsfehler', 'Bitte füllen Sie alle Pflichtfelder im ersten Schritt aus (Name, E-Mail, Telefon, Wohnort).', 'error');
+        // Highlight first invalid field (optional, simple focus for now)
+        if (!name) document.getElementById('name').focus();
+        else if (!email) document.getElementById('email').focus();
+        else if (!phone) document.getElementById('phone').focus();
+        else if (!city) document.getElementById('city').focus();
+        return;
+      }
+
+      // If validation passes, switch steps
+      formStep1.style.display = 'none';
+      formStep2.style.display = 'block'; // Or 'flex' or 'grid' if it uses that
+    });
+  }
+  // --- End multi-step form logic ---
+
+  function updateFlatpickrDayMarkers() {
+    console.log("[Update Markers Entry] Funktion updateFlatpickrDayMarkers betreten.");
+    if (!fp || typeof fp.redraw !== 'function') {
+        console.warn("[Update Markers] Flatpickr Instanz (fp) nicht verfügbar oder redraw keine Funktion für updateFlatpickrDayMarkers. fp:", fp);
+        return;
+    }
+    if (!fp.calendarContainer) {
+        console.warn("[Update Markers] fp.calendarContainer nicht verfügbar. Flatpickr möglicherweise nicht vollständig initialisiert.");
+        return;
+    }
+
+    // Entferne zuerst alle bestehenden benutzerdefinierten Tagesklassen, die wir verwenden
+    const days = fp.calendarContainer.querySelectorAll('.flatpickr-day');
+    days.forEach(dayElem => {
+        dayElem.classList.remove('flatpickr-day-has-user-slots'); 
+    });
+
+    // Füge die Klasse für Tage hinzu, an denen der Nutzer Termine ausgewählt hat
+    Object.keys(selectedDateTimeSlots).forEach(dateKey => {
+        if (selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
+            // Erzeuge ein Date-Objekt sicher, um Zeitzonenprobleme bei reinen Datumsstrings zu minimieren
+            const dateParts = dateKey.split('-').map(Number);
+            const dateForFlatpickr = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            
+            const dayElement = fp.getDateElem(dateForFlatpickr); 
+            if (dayElement) {
+                dayElement.classList.add('flatpickr-day-has-user-slots');
+            } else {
+                // console.warn(`[Update Markers] Kein dayElement für Datum ${dateKey} gefunden.`);
+            }
+        }
+    });
+    
+    fp.redraw(); // Zeichne den Kalender neu, um die Änderungen der Klassen anzuzeigen
+    console.log("[Update Markers Exit] Markers updated based on selectedDateTimeSlots:", JSON.parse(JSON.stringify(selectedDateTimeSlots)) );
+  }
+
+  (function enableConsoleColors() {
+      if (typeof window.console.colorsEnabled !== 'undefined') return;
+      const colors = { 'black': '0', 'red': '1', 'green': '2', 'yellow': '3', 'blue': '4', 'magenta': '5', 'cyan': '6', 'white': '7' };
+      for (const colorName in colors) {
+          if (colors.hasOwnProperty(colorName)) {
+              const colorCode = colors[colorName];
+              Object.defineProperty(String.prototype, colorName, {
+                  get: function () { return `\x1b[3${colorCode}m` + this + '\x1b[0m'; },
+                  enumerable: false, configurable: true
+              });
+          }
+      }
+      window.console.colorsEnabled = true;
+  })();
+</script>
+
+<script>
+const modal = document.getElementById('applicationModal');
+const openBtn = document.getElementById('openFormBtn');
+const closeBtn = document.querySelector('.close-btn');
+
+// Notification Modal Elements
+const notificationModal = document.getElementById('notificationModal');
+const notificationTitleElem = document.getElementById('notificationTitle');
+const notificationMessageElem = document.getElementById('notificationMessage');
+const closeNotificationBtn = notificationModal ? notificationModal.querySelector('.close-notification-btn') : null;
+const notificationCloseUserBtn = document.getElementById('notificationCloseUserBtn');
+
+// Function to show notification modal
+function showNotification(title, message, type = 'info') { // type can be 'success', 'error', or 'info' (default)
+    if (!notificationModal || !notificationTitleElem || !notificationMessageElem) {
+        console.error('Notification modal elements not found. Falling back to alert.');
+        alert(`${title}\n\n${message.replace(/<br\s*\/?>/gi, '\n').replace(/<ul[^>]*>|<\/ul>/gi, '\n').replace(/<li[^>]*>|<\/li>/gi, ' - ')}`);
+        return;
+    }
+    notificationTitleElem.textContent = title;
+    notificationMessageElem.innerHTML = message; // Use innerHTML to allow for HTML in messages (e.g., lists)
+
+    notificationModal.classList.remove('success', 'error'); // Remove any existing type classes
+    if (type === 'success') {
+        notificationModal.classList.add('success');
+    } else if (type === 'error') {
+        notificationModal.classList.add('error');
+    }
+
+    notificationModal.style.display = 'block';
+}
+
+// Function to hide notification modal
+function hideNotification() {
+    if (notificationModal) {
+        notificationModal.style.display = 'none';
+    }
+}
+
+// Event listeners for notification modal
+if (closeNotificationBtn) {
+    closeNotificationBtn.onclick = hideNotification;
+}
+if (notificationCloseUserBtn) {
+    notificationCloseUserBtn.onclick = hideNotification;
+}
+
+openBtn.onclick = function() {
+  modal.style.display = 'block';
+}
+
+closeBtn.onclick = function() {
+  modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = 'none';
+  }
+  // Close notification modal if clicked outside content
+  if (notificationModal && event.target == notificationModal) {
+    hideNotification();
+  }
+}
+
+// New Firestore-integrated form submission logic
+document.addEventListener('DOMContentLoaded', function() {
+    const applicationForm = document.getElementById('applicationForm');
+    const submitButton = applicationForm ? applicationForm.querySelector('button[type="submit"]') : null;
+
+    if (applicationForm && submitButton) {
+        applicationForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Keep this to handle submission via JS
+            console.log("[Form Submit Entry] Application form submission initiated.");
+
+            if (submitButton.disabled) {
+                console.warn("[Form Submit] Submit button is already disabled. Aborting.");
+                return;
+            }
+            submitButton.disabled = true;
+            submitButton.textContent = 'Verarbeite...';
+
+            // Check if Firebase functions are globally available
+            if (!window.db || !window.setDoc || !window.doc || !window.Timestamp || !window.serverTimestamp || !window.collection) {
+                // alert('Fehler: Wichtige Hintergrunddienste (Firebase) sind nicht korrekt initialisiert. Bitte laden Sie die Seite neu oder kontaktieren Sie den Support.');
+                showNotification('Initialisierungsfehler', 'Wichtige Hintergrunddienste (Firebase) sind nicht korrekt initialisiert. Bitte laden Sie die Seite neu oder kontaktieren Sie den Support.', 'error');
+                console.error("[Form Submit] Firebase functions not available on window object.");
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Collect applicant data from form
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const cityInput = document.getElementById('city');
+            const coverletterInput = document.getElementById('coverletter');
+            const driversLicenseBCheckbox = document.getElementById('driversLicenseB');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+            const city = cityInput ? cityInput.value.trim() : '';
+            const coverletter = coverletterInput ? coverletterInput.value.trim() : '';
+            const driversLicenseB = driversLicenseBCheckbox ? driversLicenseBCheckbox.checked : false;
+
+            // Basic validation (HTML 'required' should also be used)
+            if (!name || !email || !phone || !city || !coverletter) {
+                // alert('Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail).');
+                showNotification('Validierungsfehler', 'Bitte füllen Sie alle Pflichtfelder aus (Name, E-Mail, Telefon, Wohnort, Bewerbung).', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                // Fokus auf erstes leeres Feld setzen (optional, aber benutzerfreundlich)
+                if (!name) nameInput?.focus();
+                else if (!email) emailInput?.focus();
+                else if (!phone) phoneInput?.focus();
+                else if (!city) cityInput?.focus();
+                else if (!coverletter) coverletterInput?.focus();
+                return;
+            }
+            if (!driversLicenseB) {
+                // alert('Bitte bestätigen Sie, dass Sie einen Führerschein der Klasse B besitzen.');
+                showNotification('Validierungsfehler', 'Bitte bestätigen Sie, dass Sie einen Führerschein der Klasse B besitzen.', 'error');
+                driversLicenseBCheckbox?.focus();
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Corrected validation for selected time slots
+            let isSlotActuallySelected = false;
+            if (selectedDateTimeSlots && typeof selectedDateTimeSlots === 'object' && Object.keys(selectedDateTimeSlots).length > 0) {
+                for (const dateKey in selectedDateTimeSlots) {
+                    if (selectedDateTimeSlots.hasOwnProperty(dateKey) &&
+                        selectedDateTimeSlots[dateKey] && // Check if the array/value for the dateKey exists
+                        selectedDateTimeSlots[dateKey].length > 0) { // Check if the array of times has entries
+                        isSlotActuallySelected = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isSlotActuallySelected) {
+                showNotification('Validierungsfehler', 'Bitte wählen Sie einen Wunschtermin für das Bewerbungsgespräch aus.', 'error');
+                document.getElementById('availability')?.focus();
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+                return;
+            }
+
+            // Populate the hidden field for formsubmit.co (contains the selected slots as JSON)
+            if (detailedAvailabilityInput) {
+                detailedAvailabilityInput.value = JSON.stringify(selectedDateTimeSlots);
+            } else {
+                console.warn('[Form Submit] Hidden field #detailedAvailability not found. Detailed time slots will not be sent to formsubmit.co.');
+            }
+
+            console.log("[Form Submit] Attempting to book slots in Firestore:", JSON.parse(JSON.stringify(selectedDateTimeSlots)));
+            const bookingPromises = [];
+
+            for (const dateKey in selectedDateTimeSlots) {
+                if (selectedDateTimeSlots.hasOwnProperty(dateKey) && selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
+                    const times = selectedDateTimeSlots[dateKey];
+                    times.forEach(timeStr => { // e.g., timeStr is "09:00"
+                        const docId = `${dateKey}_${timeStr}`; // e.g., "2024-07-25_09:00"
+
+                        // Create JS Date object from dateStr and timeStr for Firestore Timestamp
+                        const [year, month, day] = dateKey.split('-').map(Number);
+                        const [hour, minute] = timeStr.split(':').map(Number);
+                        const slotDateObject = new Date(year, month - 1, day, hour, minute); // JS month is 0-indexed
+
+                        const bookingData = {
+                            slotDateTime: window.Timestamp.fromDate(slotDateObject), // Convert JS Date to Firestore Timestamp
+                            bookedAt: window.serverTimestamp(), // Server timestamp for booking creation
+                            applicantInfo: {
+                                name: name,
+                                email: email,
+                                phone: phone,
+                                city: city,
+                                coverletter: coverletter
+                            },
+                            driversLicenseConfirmed: driversLicenseB
+                            // Add any other data you want to store for the booking
+                        };
+
+                        const bookingDocRef = window.doc(window.db, "bookedInterviewSlots", docId);
+                        
+                        // Add the setDoc promise to the array. 
+                        // Using setDoc will create the document or overwrite it if it already exists with this ID.
+                        // For true "only create if not exists" and to handle race conditions more robustly,
+                        // Firestore Transactions would be the next step, but this is a good start.
+                        bookingPromises.push(
+                            window.setDoc(bookingDocRef, bookingData)
+                                .then(() => {
+                                    console.log(`[Form Submit] Slot ${docId} successfully written to Firestore.`);
+                                })
+                                .catch(error => {
+                                    console.error(`[Form Submit] Error writing slot ${docId} to Firestore: `, error);
+                                    // Re-throw to make Promise.all fail
+                                    throw new Error(`Fehler beim Buchen des Termins ${formatDateForDisplay(dateKey)} um ${timeStr} Uhr: ${error.message}`); 
+                                })
+                        );
+                    });
+                }
+            }
+
+            try {
+                await Promise.all(bookingPromises); // Wait for all Firestore writes to complete
+                console.log("[Form Submit] All selected slots successfully written to Firestore.");
+
+                let successTitle = 'Vielen Dank für Ihre Bewerbung!';
+                let successMessageBody = 'Ihre Terminauswahl wurde erfolgreich in unserer Datenbank gespeichert.';
+                
+                let bookedSlotForFeedback = '';
+                for (const dateKey in selectedDateTimeSlots) { // Should be only one entry
+                    if (selectedDateTimeSlots.hasOwnProperty(dateKey) && selectedDateTimeSlots[dateKey] && selectedDateTimeSlots[dateKey].length > 0) {
+                        const timeStr = selectedDateTimeSlots[dateKey][0];
+                        bookedSlotForFeedback = `- ${formatDateForDisplay(dateKey)} um ${timeStr} Uhr`;
+                        break;
+                    }
+                }
+
+                if (bookedSlotForFeedback) {
+                    successMessageBody += `<br><br>Gebuchter Termin:<ul><li>${bookedSlotForFeedback}</li></ul>`;
+                }
+                successMessageBody += '<br><br>Sie hören bald von uns bezüglich der nächsten Schritte.';
+
+                showNotification(successTitle, successMessageBody, 'success');
+
+                // Clear form and selected slots after successful Firestore submission
+                selectedDateTimeSlots = {}; 
+                if (typeof updateAvailabilitySummaryAndHiddenInput === 'function') updateAvailabilitySummaryAndHiddenInput();
+                if (typeof updateFlatpickrDayMarkers === 'function') updateFlatpickrDayMarkers();
+                applicationForm.reset(); 
+                // Optionally close the main modal, or let the user do it via the notification modal's close button
+                // if(modal) modal.style.display = 'none'; 
+
+            } catch (error) {
+                console.error("[Form Submit] One or more slots could not be booked in Firestore:", error);
+                showNotification(
+                    'Fehler bei der Terminbuchung', 
+                    'Mindestens einer Ihrer ausgewählten Termine konnte nicht in unserer Datenbank gespeichert werden. <br>Möglicherweise wurde ein Termin in der Zwischenzeit von jemand anderem belegt. Bitte überprüfen Sie Ihre Auswahl und versuchen Sie es erneut.<br><br>Details: ' + error.message,
+                    'error'
+                );
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'Bewerbung senden';
+            }
+        });
+    } else {
+        if (!applicationForm) console.error('[Form Submit Init] Application form (#applicationForm) not found.');
+        if (!submitButton) console.error('[Form Submit Init] Submit button within the form not found.');
+    }
+});
+
+</script>
+
+</body>
+</html>
